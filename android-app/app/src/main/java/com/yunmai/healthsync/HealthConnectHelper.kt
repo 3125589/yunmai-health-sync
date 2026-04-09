@@ -27,9 +27,11 @@ class HealthConnectHelper(context: Context) {
     suspend fun writeWeight(weight: Double, datetime: String): Boolean {
         return try {
             val instant = parseDatetime(datetime)
+            val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
             val weightRecord = WeightRecord(
                 time = instant,
+                zoneOffset = zoneOffset,
                 weight = Mass.kilograms(weight)
             )
 
@@ -48,9 +50,11 @@ class HealthConnectHelper(context: Context) {
     suspend fun writeBodyFat(fat: Double, datetime: String): Boolean {
         return try {
             val instant = parseDatetime(datetime)
+            val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
             val bodyFatRecord = BodyFatRecord(
                 time = instant,
+                zoneOffset = zoneOffset,
                 percentage = Percentage(fat)
             )
 
