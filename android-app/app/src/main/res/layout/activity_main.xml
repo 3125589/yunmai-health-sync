@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp"
+    android:gravity="center"
+    tools:context=".MainActivity">
+
+    <!-- 标题 -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="云麦体重同步"
+        android:textSize="28sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- 状态 -->
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="准备同步"
+        android:textSize="18sp"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- 最新数据 -->
+    <TextView
+        android:id="@+id/tvLastSync"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="点击下方按钮开始"
+        android:textSize="16sp"
+        android:textColor="#666666"
+        android:layout_marginBottom="32dp"/>
+
+    <!-- 立即同步按钮 -->
+    <Button
+        android:id="@+id/btnSyncNow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="立即同步"
+        android:textSize="18sp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- 设置定时按钮 -->
+    <Button
+        android:id="@+id/btnSetupSchedule"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="设置每天自动同步"
+        android:textSize="16sp"
+        android:backgroundTint="#4CAF50"/>
+
+    <!-- 说明 -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="说明：\n\n1. 首次使用需要授权 Health Connect 权限\n\n2. 点击「立即同步」可手动同步一次\n\n3. 点击「设置自动同步」后每天 8:30 自动同步\n\n4. 数据来源：云麦体脂秤 API"
+        android:textSize="14sp"
+        android:textColor="#888888"/>
+
+</LinearLayout>
