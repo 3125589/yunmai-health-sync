@@ -3,7 +3,6 @@ package com.yunmai.healthsync
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
@@ -92,6 +91,22 @@ class MainActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
+                // 检查 Health Connect 可用性
+                val availability = HealthConnectClient.getSdkStatus(this@MainActivity)
+                
+                when (availability) {
+                    HealthConnectClient.SDK_UNAVAILABLE -> {
+                        tvStatus.text = "❌ Health Connect 不可用"
+                        Toast.makeText(this@MainActivity, "请安装 Health Connect", Toast.LENGTH_LONG).show()
+                        return@launch
+                    }
+                    HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
+                        tvStatus.text = "⚠️ 请更新 Health Connect"
+                        Toast.makeText(this@MainActivity, "请更新 Health Connect 到最新版本", Toast.LENGTH_LONG).show()
+                        return@launch
+                    }
+                }
+                
                 // 创建 Health Connect Client
                 healthConnectClient = HealthConnectClient.getOrCreate(this@MainActivity)
                 
@@ -110,8 +125,6 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Log.e(TAG, "初始化失败", e)
                 tvStatus.text = "❌ 初始化失败: ${e.message}"
-                
-                // 可能是 Health Connect 未安装
                 Toast.makeText(this@MainActivity, "请确保已安装 Health Connect", Toast.LENGTH_LONG).show()
             }
         }
