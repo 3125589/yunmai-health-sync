@@ -29,7 +29,8 @@ class HealthConnectHelper(context: Context) {
             val instant = parseDatetime(datetime)
             val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
-            val weightRecord = WeightRecord(
+            // 使用 record 方法创建记录
+            val weightRecord = WeightRecord.record(
                 time = instant,
                 zoneOffset = zoneOffset,
                 weight = Mass.kilograms(weight)
@@ -52,7 +53,7 @@ class HealthConnectHelper(context: Context) {
             val instant = parseDatetime(datetime)
             val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
-            val bodyFatRecord = BodyFatRecord(
+            val bodyFatRecord = BodyFatRecord.record(
                 time = instant,
                 zoneOffset = zoneOffset,
                 percentage = Percentage(fat)
