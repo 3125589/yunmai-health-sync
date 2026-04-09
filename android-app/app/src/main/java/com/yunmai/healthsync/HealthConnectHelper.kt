@@ -4,12 +4,14 @@ import android.content.Context
 import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.Metadata
 import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.units.Mass
 import androidx.health.connect.client.units.Percentage
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 /**
@@ -26,10 +28,13 @@ class HealthConnectHelper(context: Context) {
     suspend fun writeWeight(weight: Double, datetime: String): Boolean {
         return try {
             val instant = parseDatetime(datetime)
+            val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
             val weightRecord = WeightRecord(
                 time = instant,
-                weight = Mass.kilograms(weight)
+                zoneOffset = zoneOffset,
+                weight = Mass.kilograms(weight),
+                metadata = Metadata()
             )
 
             healthConnectClient.insertRecords(listOf(weightRecord))
@@ -47,10 +52,13 @@ class HealthConnectHelper(context: Context) {
     suspend fun writeBodyFat(fat: Double, datetime: String): Boolean {
         return try {
             val instant = parseDatetime(datetime)
+            val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
             val bodyFatRecord = BodyFatRecord(
                 time = instant,
-                percentage = Percentage(fat)
+                zoneOffset = zoneOffset,
+                percentage = Percentage(fat),
+                metadata = Metadata()
             )
 
             healthConnectClient.insertRecords(listOf(bodyFatRecord))
