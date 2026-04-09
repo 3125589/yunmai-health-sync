@@ -18,26 +18,22 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        cache: gradle
     
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
     
-    - name: Build APK (Debug)
+    - name: Make gradlew executable
+      run: chmod +x android-app/gradlew
+    
+    - name: Build APK with Gradle
+      uses: gradle/actions/setup-gradle@v3
+      with:
+        gradle-version: 8.5
+      
+    - name: Run Gradle Build
       run: |
         cd android-app
-        echo "Creating local.properties"
-        echo "sdk.dir=$ANDROID_HOME" > local.properties
-        
-        # Download Gradle Wrapper if missing
-        if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
-          mkdir -p gradle/wrapper
-          curl -L -o gradle/wrapper/gradle-wrapper.jar \
-            https://github.com/gradle/gradle/raw/v8.2.0/gradle/wrapper/gradle-wrapper.jar
-        fi
-        
-        chmod +x gradlew
-        ./gradlew assembleDebug --no-daemon --stacktrace
+        gradle assembleDebug --no-daemon
     
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
