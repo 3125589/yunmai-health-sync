@@ -33,7 +33,7 @@ class HealthConnectHelper(context: Context) {
                 time = instant,
                 zoneOffset = zoneOffset,
                 weight = Mass.kilograms(weight),
-                metadata = androidx.health.connect.client.records.metadata.Metadata()
+                metadata = androidx.health.connect.client.records.metadata.Metadata.autoRecorded()
             )
 
             healthConnectClient.insertRecords(listOf(weightRecord))
@@ -57,7 +57,7 @@ class HealthConnectHelper(context: Context) {
                 time = instant,
                 zoneOffset = zoneOffset,
                 percentage = Percentage(fat),
-                metadata = androidx.health.connect.client.records.metadata.Metadata()
+                metadata = androidx.health.connect.client.records.metadata.Metadata.autoRecorded()
             )
 
             healthConnectClient.insertRecords(listOf(bodyFatRecord))
