@@ -2,7 +2,6 @@ package com.yunmai.healthsync
 
 import android.content.Context
 import android.health.connect.HealthConnectManager
-import android.health.connect.InsertRecordsResponse
 import android.health.connect.datatypes.WeightRecord
 import android.health.connect.datatypes.BodyFatPercentageRecord
 import android.health.connect.datatypes.units.Mass
@@ -27,10 +26,12 @@ class HealthConnectHelper(private val context: Context) {
     suspend fun writeWeight(weight: Double, datetime: String): Boolean {
         try {
             val instant = parseDatetime(datetime)
+            val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
             val weightRecord = WeightRecord(
-                time = instant,
-                weight = Mass.kilograms(weight)
+                instant,
+                zoneOffset,
+                Mass.kilograms(weight)
             )
 
             healthConnectManager.insertRecords(listOf(weightRecord))
@@ -48,10 +49,12 @@ class HealthConnectHelper(private val context: Context) {
     suspend fun writeBodyFat(fat: Double, datetime: String): Boolean {
         try {
             val instant = parseDatetime(datetime)
+            val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
             val bodyFatRecord = BodyFatPercentageRecord(
-                time = instant,
-                percentage = Percentage(fat)
+                instant,
+                zoneOffset,
+                Percentage(fat)
             )
 
             healthConnectManager.insertRecords(listOf(bodyFatRecord))
