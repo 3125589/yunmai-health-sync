@@ -2,6 +2,7 @@ package com.yunmai.healthsync
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -9,8 +10,8 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.permission.PermissionController
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.WeightRecord
 import androidx.lifecycle.lifecycleScope
@@ -29,7 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvLastSync: TextView
     private lateinit var btnSyncNow: Button
     private lateinit var btnSetupSchedule: Button
-    private lateinit var healthConnectClient: HealthConnectClient
+    private var healthConnectClient: HealthConnectClient? = null
 
     // Health Connect 权限
     private val permissions = setOf(
@@ -83,26 +84,11 @@ class MainActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                // 检查 Health Connect 是否可用
-                val availabilityStatus = HealthConnectClient.getSdkStatus(this@MainActivity)
-                
-                if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE) {
-                    tvStatus.text = "Health Connect 不可用"
-                    Toast.makeText(this@MainActivity, "请先安装 Health Connect", Toast.LENGTH_LONG).show()
-                    return@launch
-                }
-                
-                if (availabilityStatus == HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED) {
-                    tvStatus.text = "请更新 Health Connect"
-                    // 可以引导用户去更新
-                    return@launch
-                }
-
                 // 获取 Health Connect Client
                 healthConnectClient = HealthConnectClient.getOrCreate(this@MainActivity)
 
                 // 检查权限
-                val granted = healthConnectClient.permissionController.getGrantedPermissions()
+                val granted = healthConnectClient!!.permissionController.getGrantedPermissions()
                 
                 if (!granted.containsAll(permissions)) {
                     // 请求权限
@@ -114,6 +100,11 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Log.e(TAG, "初始化失败: ${e.message}", e)
                 tvStatus.text = "初始化失败: ${e.message}"
+                
+                // 可能是 Health Connect 未安装
+                if (e.message?.contains("not available") == true) {
+                    Toast.makeText(this@MainActivity, "请先安装 Health Connect", Toast.LENGTH_LONG).show()
+                }
             }
         }
     }
@@ -122,6 +113,11 @@ class MainActivity : AppCompatActivity() {
      * 立即同步
      */
     private fun syncNow() {
+        if (healthConnectClient == null) {
+            Toast.makeText(this, "Health Connect 未初始化", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
         tvStatus.text = "正在同步..."
         
         lifecycleScope.launch {
