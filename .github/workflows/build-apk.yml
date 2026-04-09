@@ -25,15 +25,10 @@ jobs:
     - name: Make gradlew executable
       run: chmod +x android-app/gradlew
     
-    - name: Build APK with Gradle
-      uses: gradle/actions/setup-gradle@v3
-      with:
-        gradle-version: 8.5
-      
-    - name: Run Gradle Build
+    - name: Build APK with Gradle Wrapper
       run: |
         cd android-app
-        gradle assembleDebug --no-daemon
+        ./gradlew assembleDebug --no-daemon
     
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
@@ -45,8 +40,8 @@ jobs:
       if: success()
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v1.0.0
-        name: Yunmai Health Sync v1.0.0
+        tag_name: v1.2.0
+        name: Yunmai Health Sync v1.2.0
         files: android-app/app/build/outputs/apk/debug/*.apk
         body: |
           云麦体重同步 Android App
@@ -55,5 +50,9 @@ jobs:
           - 自动从 API 获取云麦体重数据
           - 写入 Health Connect
           - 支持手动同步和定时同步
+          
+          重要：
+          - 使用 Health Connect SDK 1.1.0-rc02
+          - 正确请求 Health Connect 权限
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
