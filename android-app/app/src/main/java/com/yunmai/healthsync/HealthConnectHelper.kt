@@ -1,22 +1,22 @@
 package com.yunmai.healthsync
 
 import android.content.Context
+import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
-import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.records.WeightRecord
 import androidx.health.connect.client.units.Mass
 import androidx.health.connect.client.units.Percentage
-import android.util.Log
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 /**
  * Health Connect 操作管理类
- * 使用 Jetpack Health Connect Client
  */
-class HealthConnectHelper(private val context: Context) {
+class HealthConnectHelper(context: Context) {
 
     private val healthConnectClient: HealthConnectClient = 
         HealthConnectClient.getOrCreate(context)
@@ -25,22 +25,20 @@ class HealthConnectHelper(private val context: Context) {
      * 写入体重数据
      */
     suspend fun writeWeight(weight: Double, datetime: String): Boolean {
-        try {
+        return try {
             val instant = parseDatetime(datetime)
-            val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
             val weightRecord = WeightRecord(
                 time = instant,
-                zoneOffset = zoneOffset,
                 weight = Mass.kilograms(weight)
             )
 
             healthConnectClient.insertRecords(listOf(weightRecord))
-            Log.d("HealthConnect", "写入体重成功: ${weight}kg")
-            return true
+            Log.d(TAG, "写入体重成功: ${weight}kg")
+            true
         } catch (e: Exception) {
-            Log.e("HealthConnect", "写入体重失败: ${e.message}")
-            return false
+            Log.e(TAG, "写入体重失败: ${e.message}", e)
+            false
         }
     }
 
@@ -48,22 +46,20 @@ class HealthConnectHelper(private val context: Context) {
      * 写入体脂率数据
      */
     suspend fun writeBodyFat(fat: Double, datetime: String): Boolean {
-        try {
+        return try {
             val instant = parseDatetime(datetime)
-            val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
             val bodyFatRecord = BodyFatRecord(
                 time = instant,
-                zoneOffset = zoneOffset,
                 percentage = Percentage(fat)
             )
 
             healthConnectClient.insertRecords(listOf(bodyFatRecord))
-            Log.d("HealthConnect", "写入体脂成功: ${fat}%")
-            return true
+            Log.d(TAG, "写入体脂成功: ${fat}%")
+            true
         } catch (e: Exception) {
-            Log.e("HealthConnect", "写入体脂失败: ${e.message}")
-            return false
+            Log.e(TAG, "写入体脂失败: ${e.message}", e)
+            false
         }
     }
 
@@ -87,5 +83,9 @@ class HealthConnectHelper(private val context: Context) {
         val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
         val localDateTime = LocalDateTime.parse(datetime, formatter)
         return localDateTime.atZone(ZoneId.systemDefault()).toInstant()
+    }
+
+    companion object {
+        private const val TAG = "HealthConnectHelper"
     }
 }

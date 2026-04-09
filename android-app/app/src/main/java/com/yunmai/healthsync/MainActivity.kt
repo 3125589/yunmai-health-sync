@@ -1,6 +1,5 @@
 package com.yunmai.healthsync
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -11,6 +10,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.WeightRecord
@@ -41,19 +41,27 @@ class MainActivity : AppCompatActivity() {
         HealthPermission.getWritePermission(BodyFatRecord::class)
     )
 
-    // 权限请求码
-    private val PERMISSION_REQUEST_CODE = 1001
+    // 权限请求 launcher - 使用官方推荐方式
+    private val requestPermissions = registerForActivityResult(
+        PermissionController.createRequestPermissionResultContract()
+    ) { grantedPermissions ->
+        Log.d(TAG, "授权结果: $grantedPermissions")
+        
+        if (grantedPermissions.containsAll(PERMISSIONS)) {
+            tvStatus.text = "✅ 已授权"
+            Toast.makeText(this, "权限已授权", Toast.LENGTH_SHORT).show()
+        } else {
+            tvStatus.text = "⚠️ 权限不完整"
+            Toast.makeText(this, "请授权所有权限", Toast.LENGTH_LONG).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
         initViews()
-        
-        // 关键：立即初始化并请求 Health Connect 权限
-        lifecycleScope.launch {
-            initHealthConnectAndRequestPermission()
-        }
+        initHealthConnect()
     }
 
     private fun initViews() {
@@ -72,136 +80,53 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnGrantPermission.setOnClickListener {
-            requestHealthConnectPermission()
+            requestPermissions.launch(PERMISSIONS)
         }
     }
 
     /**
-     * 初始化 Health Connect 并请求权限
+     * 初始化 Health Connect
      */
-    private suspend fun initHealthConnectAndRequestPermission() {
+    private fun initHealthConnect() {
         tvStatus.text = "正在初始化 Health Connect..."
         
-        try {
-            // 获取 Health Connect Client - 这会注册应用到 Health Connect
-            healthConnectClient = HealthConnectClient.getOrCreate(this@MainActivity)
-            
-            Log.d(TAG, "Health Connect Client 创建成功")
-            
-            // 检查已授权的权限
-            val grantedPermissions = healthConnectClient!!.permissionController.getGrantedPermissions()
-            
-            Log.d(TAG, "已授权权限: $grantedPermissions")
-            
-            if (!grantedPermissions.containsAll(PERMISSIONS)) {
-                tvStatus.text = "需要授权健康权限"
-                
-                // 自动请求权限
-                requestHealthConnectPermission()
-            } else {
-                tvStatus.text = "准备就绪"
-            }
-            
-        } catch (e: Exception) {
-            Log.e(TAG, "Health Connect 初始化失败", e)
-            tvStatus.text = "初始化失败: ${e.message}"
-            
-            // 可能是 Health Connect 未安装
-            if (e.message?.contains("not available") == true || 
-                e.message?.contains("not installed") == true) {
-                Toast.makeText(this, "请先安装 Health Connect", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
-    /**
-     * 请求 Health Connect 权限
-     */
-    private fun requestHealthConnectPermission() {
         lifecycleScope.launch {
             try {
-                val client = healthConnectClient
-                if (client == null) {
-                    Toast.makeText(this@MainActivity, "请先初始化 Health Connect", Toast.LENGTH_SHORT).show()
-                    return@launch
+                // 检查 Health Connect 状态
+                val status = HealthConnectClient.getSdkStatus(this@MainActivity)
+                
+                Log.d(TAG, "Health Connect SDK 状态: $status")
+                
+                when (status) {
+                    HealthConnectClient.SDK_UNAVAILABLE -> {
+                        tvStatus.text = "❌ Health Connect 不可用"
+                        Toast.makeText(this@MainActivity, "请安装 Health Connect", Toast.LENGTH_LONG).show()
+                        return@launch
+                    }
+                    HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
+                        tvStatus.text = "⚠️ 请更新 Health Connect"
+                        return@launch
+                    }
                 }
                 
-                // 使用 Intent 方式请求权限
-                val requestPermissionIntent = Intent("androidx.health.ACTION_REQUEST_PERMISSIONS")
-                    .putExtra("androidx.health.extra.PERMISSIONS", PERMISSIONS.toTypedArray())
-                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                // 创建 Health Connect Client
+                healthConnectClient = HealthConnectClient.getOrCreate(this@MainActivity)
                 
-                startActivityForResult(requestPermissionIntent, PERMISSION_REQUEST_CODE)
+                Log.d(TAG, "Health Connect Client 创建成功")
+                
+                // 检查已授权的权限
+                val granted = healthConnectClient!!.permissionController.getGrantedPermissions()
+                Log.d(TAG, "已授权权限: $granted")
+                
+                if (!granted.containsAll(PERMISSIONS)) {
+                    tvStatus.text = "请点击「授权」按钮"
+                } else {
+                    tvStatus.text = "✅ 准备就绪"
+                }
                 
             } catch (e: Exception) {
-                Log.e(TAG, "请求权限失败", e)
-                // 如果 Intent 方式失败，尝试打开系统设置
-                openHealthConnectAppSettings()
-            }
-        }
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        
-        if (requestCode == PERMISSION_REQUEST_CODE) {
-            if (resultCode == Activity.RESULT_OK) {
-                // 检查权限状态
-                lifecycleScope.launch {
-                    checkPermissionStatus()
-                }
-            } else {
-                tvStatus.text = "权限请求被取消"
-            }
-            
-            // 重新检查权限状态
-            lifecycleScope.launch {
-                checkPermissionStatus()
-            }
-        }
-    }
-
-    /**
-     * 检查权限状态
-     */
-    private suspend fun checkPermissionStatus() {
-        try {
-            val client = healthConnectClient ?: return
-            val granted = client.permissionController.getGrantedPermissions()
-            
-            Log.d(TAG, "当前已授权权限: $granted")
-            
-            if (granted.containsAll(PERMISSIONS)) {
-                tvStatus.text = "准备就绪"
-            } else {
-                val missing = PERMISSIONS - granted
-                tvStatus.text = "缺少权限: ${missing.size} 项"
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "检查权限失败", e)
-        }
-    }
-
-    /**
-     * 打开 Health Connect 应用设置
-     */
-    private fun openHealthConnectAppSettings() {
-        try {
-            // 方法1: 打开 Health Connect 应用详情
-            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                data = Uri.parse("package:com.google.android.apps.healthdata")
-                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            }
-            startActivity(intent)
-            Toast.makeText(this, "请在 Health Connect 中授权「云麦体重同步」", Toast.LENGTH_LONG).show()
-            
-        } catch (e: Exception) {
-            // 方法2: 打开应用列表
-            try {
-                val intent = Intent(Settings.ACTION_APPLICATION_SETTINGS)
-                startActivity(intent)
-            } catch (e2: Exception) {
-                Toast.makeText(this, "请手动打开 Health Connect 授权", Toast.LENGTH_LONG).show()
+                Log.e(TAG, "初始化失败", e)
+                tvStatus.text = "❌ 初始化失败: ${e.message}"
             }
         }
     }
@@ -210,8 +135,9 @@ class MainActivity : AppCompatActivity() {
      * 立即同步
      */
     private fun syncNow() {
-        if (healthConnectClient == null) {
-            Toast.makeText(this, "Health Connect 未初始化，请重启应用", Toast.LENGTH_SHORT).show()
+        val client = healthConnectClient
+        if (client == null) {
+            Toast.makeText(this, "Health Connect 未初始化", Toast.LENGTH_SHORT).show()
             return
         }
         
@@ -219,20 +145,22 @@ class MainActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                // 先检查权限
-                val granted = healthConnectClient!!.permissionController.getGrantedPermissions()
+                // 检查权限
+                val granted = client.permissionController.getGrantedPermissions()
                 if (!granted.containsAll(PERMISSIONS)) {
-                    tvStatus.text = "缺少权限"
-                    requestHealthConnectPermission()
+                    tvStatus.text = "❌ 缺少权限"
+                    requestPermissions.launch(PERMISSIONS)
                     return@launch
                 }
                 
+                // 获取数据
                 val api = YunmaiApi.create()
                 val response = api.getLatestWeight(YunmaiApi.TOKEN)
 
                 if (response.success && response.data != null) {
                     val data = response.data
                     
+                    // 写入 Health Connect
                     val healthHelper = HealthConnectHelper(this@MainActivity)
                     val success = healthHelper.writeAllData(data)
 
@@ -250,11 +178,6 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 tvStatus.text = "❌ 错误: ${e.message}"
                 Log.e(TAG, "同步错误", e)
-                
-                if (e.message?.contains("permission") == true || 
-                    e.message?.contains("SecurityException") == true) {
-                    requestHealthConnectPermission()
-                }
             }
         }
     }
