@@ -3,9 +3,7 @@ name: Build Android APK
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -20,30 +18,46 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+        cache: gradle
     
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
     
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew || true
-    
-    - name: Build APK
+    - name: Build APK (Debug)
       run: |
         cd android-app
-        ./gradlew assembleDebug --no-daemon || gradle assembleDebug --no-daemon
+        echo "Creating local.properties"
+        echo "sdk.dir=$ANDROID_HOME" > local.properties
+        
+        # Download Gradle Wrapper if missing
+        if [ ! -f gradle/wrapper/gradle-wrapper.jar ]; then
+          mkdir -p gradle/wrapper
+          curl -L -o gradle/wrapper/gradle-wrapper.jar \
+            https://github.com/gradle/gradle/raw/v8.2.0/gradle/wrapper/gradle-wrapper.jar
+        fi
+        
+        chmod +x gradlew
+        ./gradlew assembleDebug --no-daemon --stacktrace
     
-    - name: Upload APK
+    - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: yunmai-health-sync-apk
         path: android-app/app/build/outputs/apk/debug/*.apk
     
-    - name: Create Release
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    - name: Create Release with APK
+      if: success()
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v1.0.${{ github.run_number }}
-        name: Yunmai Health Sync v1.0.${{ github.run_number }}
+        tag_name: v1.0.0
+        name: Yunmai Health Sync v1.0.0
         files: android-app/app/build/outputs/apk/debug/*.apk
+        body: |
+          云麦体重同步 Android App
+          
+          功能：
+          - 自动从 API 获取云麦体重数据
+          - 写入 Health Connect
+          - 支持手动同步和定时同步
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
