@@ -28,7 +28,6 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         initViews()
-        setupWorkManager()
     }
 
     private fun initViews() {
@@ -83,14 +82,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * 设置定时任务（每天 8:30）
+     * 设置定时任务
      */
     private fun setupDailySchedule() {
         val dailyWork = PeriodicWorkRequestBuilder<WeightSyncWorker>(
             24, TimeUnit.HOURS
-        )
-            .setInitialDelay(8, TimeUnit.HOURS)  // 首次执行延迟
-            .build()
+        ).build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             WeightSyncWorker.WORK_NAME,
@@ -100,23 +97,6 @@ class MainActivity : AppCompatActivity() {
 
         Toast.makeText(this, "已设置每天自动同步", Toast.LENGTH_SHORT).show()
         tvStatus.text = "定时任务已启动"
-    }
-
-    /**
-     * 初始化 WorkManager
-     */
-    private fun setupWorkManager() {
-        // 检查是否已有定时任务
-        val workInfo = WorkManager.getInstance(this)
-            .getWorkInfosForUniqueWork(WeightSyncWorker.WORK_NAME)
-        
-        // 如果没有，自动创建
-        lifecycleScope.launch {
-            val info = workInfo.get()
-            if (info.isEmpty()) {
-                setupDailySchedule()
-            }
-        }
     }
 
     companion object {
