@@ -146,16 +146,9 @@ class MainActivity : AppCompatActivity() {
         
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
-                // 检查授权结果
-                val granted = data?.getStringArrayExtra("androidx.health.extra.GRANTED_PERMISSIONS")
-                Log.d(TAG, "授权结果: ${granted?.toList()}")
-                
-                if (granted != null && granted.containsAll(PERMISSIONS)) {
-                    tvStatus.text = "准备就绪"
-                    Toast.makeText(this, "权限已授权", Toast.LENGTH_SHORT).show()
-                } else {
-                    tvStatus.text = "权限未完全授权"
-                    Toast.makeText(this, "请授权所有权限", Toast.LENGTH_LONG).show()
+                // 检查权限状态
+                lifecycleScope.launch {
+                    checkPermissionStatus()
                 }
             } else {
                 tvStatus.text = "权限请求被取消"
