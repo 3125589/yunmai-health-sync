@@ -5,6 +5,8 @@ import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.metadata.Device
+import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.units.Mass
 import androidx.health.connect.client.units.Percentage
 import java.time.Instant
@@ -30,10 +32,17 @@ class HealthConnectHelper(context: Context) {
             val instant = parseDatetime(datetime)
             val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
+            // 创建 Metadata，使用 Device 类型
+            val metadata = Metadata(
+                recordingMethod = Metadata.RECORDING_METHOD_ACTIVELY_RECORDED,
+                device = Device(type = Device.TYPE_UNKNOWN)
+            )
+            
             val weightRecord = WeightRecord(
                 time = instant,
                 zoneOffset = zoneOffset,
-                weight = Mass.kilograms(weight)
+                weight = Mass.kilograms(weight),
+                metadata = metadata
             )
 
             healthConnectClient.insertRecords(listOf(weightRecord))
@@ -53,10 +62,16 @@ class HealthConnectHelper(context: Context) {
             val instant = parseDatetime(datetime)
             val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
+            val metadata = Metadata(
+                recordingMethod = Metadata.RECORDING_METHOD_ACTIVELY_RECORDED,
+                device = Device(type = Device.TYPE_UNKNOWN)
+            )
+            
             val bodyFatRecord = BodyFatRecord(
                 time = instant,
                 zoneOffset = zoneOffset,
-                percentage = Percentage(fat)
+                percentage = Percentage(fat),
+                metadata = metadata
             )
 
             healthConnectClient.insertRecords(listOf(bodyFatRecord))
