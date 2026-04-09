@@ -41,7 +41,7 @@ class MainActivity : AppCompatActivity() {
         HealthPermission.getWritePermission(BodyFatRecord::class)
     )
 
-    // 权限请求 launcher - 使用官方推荐方式
+    // 权限请求 launcher
     private val requestPermissions = registerForActivityResult(
         PermissionController.createRequestPermissionResultContract()
     ) { grantedPermissions ->
@@ -92,23 +92,6 @@ class MainActivity : AppCompatActivity() {
         
         lifecycleScope.launch {
             try {
-                // 检查 Health Connect 状态
-                val status = HealthConnectClient.getSdkStatus(this@MainActivity)
-                
-                Log.d(TAG, "Health Connect SDK 状态: $status")
-                
-                when (status) {
-                    HealthConnectClient.SDK_UNAVAILABLE -> {
-                        tvStatus.text = "❌ Health Connect 不可用"
-                        Toast.makeText(this@MainActivity, "请安装 Health Connect", Toast.LENGTH_LONG).show()
-                        return@launch
-                    }
-                    HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
-                        tvStatus.text = "⚠️ 请更新 Health Connect"
-                        return@launch
-                    }
-                }
-                
                 // 创建 Health Connect Client
                 healthConnectClient = HealthConnectClient.getOrCreate(this@MainActivity)
                 
@@ -127,6 +110,9 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Log.e(TAG, "初始化失败", e)
                 tvStatus.text = "❌ 初始化失败: ${e.message}"
+                
+                // 可能是 Health Connect 未安装
+                Toast.makeText(this@MainActivity, "请确保已安装 Health Connect", Toast.LENGTH_LONG).show()
             }
         }
     }
