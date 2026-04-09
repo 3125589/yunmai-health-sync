@@ -30,8 +30,8 @@ android {
 }
 
 dependencies {
-    // Health Connect SDK
-    implementation 'androidx.health.connect:connect-client:1.1.0-alpha07'
+    // Health Connect SDK (stable version)
+    implementation 'androidx.health.connect:connect-client:1.1.0-rc02'
 
     // WorkManager
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
