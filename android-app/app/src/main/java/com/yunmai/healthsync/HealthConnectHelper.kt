@@ -1,11 +1,11 @@
 package com.yunmai.healthsync
 
 import android.content.Context
-import android.health.connect.HealthConnectManager
-import android.health.connect.datatypes.WeightRecord
-import android.health.connect.datatypes.BodyFatPercentageRecord
-import android.health.connect.datatypes.units.Mass
-import android.health.connect.datatypes.units.Percentage
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.records.WeightRecord
+import androidx.health.connect.client.records.BodyFatRecord
+import androidx.health.connect.client.units.Mass
+import androidx.health.connect.client.units.Percentage
 import android.util.Log
 import java.time.Instant
 import java.time.LocalDateTime
@@ -14,11 +14,12 @@ import java.time.format.DateTimeFormatter
 
 /**
  * Health Connect 操作管理类
+ * 使用 Jetpack Health Connect Client
  */
 class HealthConnectHelper(private val context: Context) {
 
-    private val healthConnectManager: HealthConnectManager = 
-        context.getSystemService(HealthConnectManager::class.java)
+    private val healthConnectClient: HealthConnectClient = 
+        HealthConnectClient.getOrCreate(context)
 
     /**
      * 写入体重数据
@@ -26,15 +27,13 @@ class HealthConnectHelper(private val context: Context) {
     suspend fun writeWeight(weight: Double, datetime: String): Boolean {
         try {
             val instant = parseDatetime(datetime)
-            val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
             val weightRecord = WeightRecord(
-                instant,
-                zoneOffset,
-                Mass.kilograms(weight)
+                time = instant,
+                weight = Mass.kilograms(weight)
             )
 
-            healthConnectManager.insertRecords(listOf(weightRecord))
+            healthConnectClient.insertRecords(listOf(weightRecord))
             Log.d("HealthConnect", "写入体重成功: ${weight}kg")
             return true
         } catch (e: Exception) {
@@ -49,15 +48,13 @@ class HealthConnectHelper(private val context: Context) {
     suspend fun writeBodyFat(fat: Double, datetime: String): Boolean {
         try {
             val instant = parseDatetime(datetime)
-            val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
-            val bodyFatRecord = BodyFatPercentageRecord(
-                instant,
-                zoneOffset,
-                Percentage(fat)
+            val bodyFatRecord = BodyFatRecord(
+                time = instant,
+                percentage = Percentage(fat)
             )
 
-            healthConnectManager.insertRecords(listOf(bodyFatRecord))
+            healthConnectClient.insertRecords(listOf(bodyFatRecord))
             Log.d("HealthConnect", "写入体脂成功: ${fat}%")
             return true
         } catch (e: Exception) {
