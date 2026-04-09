@@ -32,9 +32,8 @@ class HealthConnectHelper(context: Context) {
             val instant = parseDatetime(datetime)
             val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
-            // 创建 Metadata，使用 Device 类型
-            val metadata = Metadata(
-                recordingMethod = Metadata.RECORDING_METHOD_ACTIVELY_RECORDED,
+            // 使用 autoRecorded 工厂方法
+            val metadata = Metadata.autoRecorded(
                 device = Device(type = Device.TYPE_UNKNOWN)
             )
             
@@ -62,8 +61,7 @@ class HealthConnectHelper(context: Context) {
             val instant = parseDatetime(datetime)
             val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
-            val metadata = Metadata(
-                recordingMethod = Metadata.RECORDING_METHOD_ACTIVELY_RECORDED,
+            val metadata = Metadata.autoRecorded(
                 device = Device(type = Device.TYPE_UNKNOWN)
             )
             
