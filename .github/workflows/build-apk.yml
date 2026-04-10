@@ -48,13 +48,16 @@ jobs:
         name: yunmai-health-sync-apk
         path: android-app/app/build/outputs/apk/debug/*.apk
     
+    - name: Find APK file
+      run: find android-app -name '*.apk' -type f
+    
     - name: Create Release with APK
       continue-on-error: true
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ github.run_number }}
         name: Yunmai Health Sync Build ${{ github.run_number }}
-        files: android-app/app/build/outputs/apk/debug/*.apk
+        files: android-app/app/build/outputs/apk/debug/app-debug.apk
         body: |
           云麦体重同步 Android App
           
