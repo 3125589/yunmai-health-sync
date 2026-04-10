@@ -11,8 +11,8 @@ android {
         applicationId "com.yunmai.healthsync"
         minSdk 26
         targetSdk 34  // 使用稳定版本
-        versionCode 12
-        versionName "1.9.2"
+        versionCode 13
+        versionName "1.9.3"
     }
 
     buildTypes {
@@ -30,8 +30,8 @@ android {
 }
 
 dependencies {
-    // Health Connect SDK 1.0.0 (兼容 compileSdk 34)
-    implementation 'androidx.health.connect:connect-client:1.0.0'
+    // Health Connect SDK (最新alpha版本)
+    implementation 'androidx.health.connect:connect-client:1.1.0-alpha12'
 
     // WorkManager
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
