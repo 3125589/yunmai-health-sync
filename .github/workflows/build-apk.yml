@@ -42,26 +42,31 @@ jobs:
         cd android-app
         ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tail -50
     
+    - name: List APK files
+      run: |
+        echo "Finding APK files..."
+        find android-app -name '*.apk' -type f
+        ls -la android-app/app/build/outputs/apk/debug/ || true
+    
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: yunmai-health-sync-apk
         path: android-app/app/build/outputs/apk/debug/*.apk
-    
-    - name: Find APK file
-      run: find android-app -name '*.apk' -type f
+        if-no-files-found: error
     
     - name: Create Release with APK
-      continue-on-error: true
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ github.run_number }}
-        name: Yunmai Health Sync Build ${{ github.run_number }}
-        files: android-app/app/build/outputs/apk/debug/app-debug.apk
+        name: Yunmai Health Sync v1.9.2 (Build ${{ github.run_number }})
+        files: android-app/app/build/outputs/apk/debug/*.apk
         body: |
-          云麦体重同步 Android App
+          云麦体重同步 Android App v1.9.2
           
-          使用 Health Connect SDK 1.0.0
-          支持 Android 16 手动授权
+          ## 功能
+          - 新增「打开 Health Connect 设置」按钮
+          - Health Connect SDK 1.0.0
+          - 支持 Android 16 手动授权流程
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
