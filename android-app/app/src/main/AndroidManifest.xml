@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Health Connect 权限 -->
     <uses-permission android:name="android.permission.health.READ_WEIGHT"/>
@@ -12,7 +13,7 @@
     
     <!-- 后台任务 -->
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <!-- Health Connect 可见性 -->
     <queries>
@@ -20,37 +21,39 @@
     </queries>
 
     <application
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="云麦体重同步"
         android:supportsRtl="true"
         android:theme="@style/Theme.YunmaiHealthSync"
-        android:usesCleartextTraffic="true">
+        tools:targetApi="31">
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="云麦体重同步">
+            android:theme="@style/Theme.YunmaiHealthSync">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
-            <!-- Android 16 Health Connect 声明 -->
+            <!-- Health Connect 权限说明页面 (Android 14+) -->
             <intent-filter>
                 <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
             </intent-filter>
         </activity>
 
-        <!-- Health Connect 权限请求 Activity (Android 16+ 必需) -->
-        <activity
-            android:name="androidx.health.connect.client.PermissionController$PermissionActivity"
+        <!-- Health Connect 权限使用页面 (Android 14+) - 关键配置！ -->
+        <activity-alias
+            android:name=".ViewPermissionUsageActivity"
             android:exported="true"
-            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE"
+            android:targetActivity=".MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
                 <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
             </intent-filter>
-        </activity>
+        </activity-alias>
 
     </application>
+
 </manifest>

@@ -5,14 +5,14 @@ plugins {
 
 android {
     namespace 'com.yunmai.healthsync'
-    compileSdk 36
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.yunmai.healthsync"
         minSdk 26
-        targetSdk 36
-        versionCode 14
-        versionName "1.9.4"
+        targetSdk 34
+        versionCode 15
+        versionName "1.9.5"
     }
 
     buildTypes {
@@ -30,8 +30,8 @@ android {
 }
 
 dependencies {
-    // Health Connect SDK (最新alpha版本)
-    implementation 'androidx.health.connect:connect-client:1.1.0-alpha12'
+    // Health Connect SDK 1.1.0-alpha08 (与参考项目相同版本)
+    implementation 'androidx.health.connect:connect-client:1.1.0-alpha08'
 
     // WorkManager
     implementation 'androidx.work:work-runtime-ktx:2.9.0'
