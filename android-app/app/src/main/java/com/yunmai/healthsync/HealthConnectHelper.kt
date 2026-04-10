@@ -5,7 +5,6 @@ import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.WeightRecord
-import androidx.health.connect.client.records.metadata.Device
 import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.units.Mass
 import androidx.health.connect.client.units.Percentage
@@ -17,7 +16,7 @@ import java.time.format.DateTimeFormatter
 
 /**
  * Health Connect 操作管理类
- * 使用 Health Connect SDK 1.1.0
+ * 使用 Health Connect SDK 1.0.0 (兼容 compileSdk 34)
  */
 class HealthConnectHelper(context: Context) {
 
@@ -32,10 +31,8 @@ class HealthConnectHelper(context: Context) {
             val instant = parseDatetime(datetime)
             val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
-            // 使用 autoRecorded 工厂方法
-            val metadata = Metadata.autoRecorded(
-                device = Device(type = Device.TYPE_UNKNOWN)
-            )
+            // SDK 1.0.0 使用 Metadata.recordingMethodManual
+            val metadata = Metadata.recordingMethodManual()
             
             val weightRecord = WeightRecord(
                 time = instant,
@@ -61,9 +58,7 @@ class HealthConnectHelper(context: Context) {
             val instant = parseDatetime(datetime)
             val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
-            val metadata = Metadata.autoRecorded(
-                device = Device(type = Device.TYPE_UNKNOWN)
-            )
+            val metadata = Metadata.recordingMethodManual()
             
             val bodyFatRecord = BodyFatRecord(
                 time = instant,

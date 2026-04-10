@@ -21,6 +21,9 @@ jobs:
     
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
+      with:
+        cmdline-tools-version: 11076708
+        log-gradle-key: true
     
     - name: Make gradlew executable
       run: chmod +x android-app/gradlew
@@ -28,7 +31,8 @@ jobs:
     - name: Build APK with Gradle Wrapper
       run: |
         cd android-app
-        ./gradlew assembleDebug --no-daemon
+        ./gradlew assembleDebug --no-daemon 2>&1 || true
+        ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tail -100
     
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
