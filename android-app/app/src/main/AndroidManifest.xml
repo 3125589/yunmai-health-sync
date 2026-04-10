@@ -35,14 +35,20 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Android 16 Health Connect 声明 -->
+            <intent-filter>
+                <action android:name="androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE"/>
+            </intent-filter>
         </activity>
 
-        <!-- Health Connect 权限请求 Activity -->
+        <!-- Health Connect 权限请求 Activity (Android 16+ 必需) -->
         <activity
             android:name="androidx.health.connect.client.PermissionController$PermissionActivity"
-            android:exported="true">
+            android:exported="true"
+            android:permission="android.permission.START_VIEW_PERMISSION_USAGE">
             <intent-filter>
-                <action android:name="androidx.health.ACTION_REQUEST_PERMISSIONS"/>
+                <action android:name="android.intent.action.VIEW_PERMISSION_USAGE"/>
+                <category android:name="android.intent.category.HEALTH_PERMISSIONS"/>
             </intent-filter>
         </activity>
 

@@ -40,16 +40,17 @@ class MainActivity : AppCompatActivity() {
         HealthPermission.getWritePermission(BodyFatRecord::class)
     )
 
-    // 权限请求
+    // 权限请求 (Android 16+ 使用 requestPermissionsActivityContract)
     private val requestPermissionLauncher = registerForActivityResult(
-        PermissionController.createRequestPermissionResultContract()
+        PermissionController.requestPermissionsActivityContract()
     ) { granted ->
         Log.d(TAG, "授权结果: $granted")
         if (granted.containsAll(permissions)) {
             tvStatus.text = "✅ 权限已授权"
             Toast.makeText(this, "权限授权成功！", Toast.LENGTH_SHORT).show()
         } else {
-            tvStatus.text = "⚠️ 部分权限未授权"
+            tvStatus.text = "⚠️ 部分权限未授权: ${permissions - granted}"
+            Log.w(TAG, "缺少权限: ${permissions - granted}")
         }
     }
 
