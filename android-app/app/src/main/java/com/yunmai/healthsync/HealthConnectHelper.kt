@@ -5,8 +5,6 @@ import android.util.Log
 import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.records.BodyFatRecord
 import androidx.health.connect.client.records.WeightRecord
-import androidx.health.connect.client.records.metadata.DataOrigin
-import androidx.health.connect.client.records.metadata.Metadata
 import androidx.health.connect.client.units.Mass
 import androidx.health.connect.client.units.Percentage
 import java.time.Instant
@@ -17,7 +15,6 @@ import java.time.format.DateTimeFormatter
 
 /**
  * Health Connect 操作管理类
- * 使用 Health Connect SDK 1.0.0 (兼容 compileSdk 34)
  */
 class HealthConnectHelper(private val context: Context) {
 
@@ -32,20 +29,11 @@ class HealthConnectHelper(private val context: Context) {
             val instant = parseDatetime(datetime)
             val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
-            // 参考项目的方式：直接构造 Metadata
+            // 使用最简单的构造方式，不传 metadata
             val weightRecord = WeightRecord(
                 time = instant,
                 zoneOffset = zoneOffset,
-                weight = Mass.kilograms(weight),
-                metadata = Metadata(
-                    "",
-                    DataOrigin(context.packageName),
-                    instant,
-                    null,
-                    0,
-                    null,
-                    0
-                )
+                weight = Mass.kilograms(weight)
             )
 
             healthConnectClient.insertRecords(listOf(weightRecord))
@@ -68,16 +56,7 @@ class HealthConnectHelper(private val context: Context) {
             val bodyFatRecord = BodyFatRecord(
                 time = instant,
                 zoneOffset = zoneOffset,
-                percentage = Percentage(fat),
-                metadata = Metadata(
-                    "",
-                    DataOrigin(context.packageName),
-                    instant,
-                    null,
-                    0,
-                    null,
-                    0
-                )
+                percentage = Percentage(fat)
             )
 
             healthConnectClient.insertRecords(listOf(bodyFatRecord))
