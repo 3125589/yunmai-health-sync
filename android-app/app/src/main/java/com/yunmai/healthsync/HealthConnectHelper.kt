@@ -31,11 +31,12 @@ class HealthConnectHelper(context: Context) {
             val instant = parseDatetime(datetime)
             val zoneOffset = ZoneId.systemDefault().rules.getOffset(instant)
             
-            // SDK 1.1.0 使用空 Metadata
+            // SDK 1.1.0 使用 Metadata()
             val weightRecord = WeightRecord(
                 time = instant,
                 zoneOffset = zoneOffset,
-                weight = Mass.kilograms(weight)
+                weight = Mass.kilograms(weight),
+                metadata = Metadata()
             )
 
             healthConnectClient.insertRecords(listOf(weightRecord))
@@ -58,7 +59,8 @@ class HealthConnectHelper(context: Context) {
             val bodyFatRecord = BodyFatRecord(
                 time = instant,
                 zoneOffset = zoneOffset,
-                percentage = Percentage(fat)
+                percentage = Percentage(fat),
+                metadata = Metadata()
             )
 
             healthConnectClient.insertRecords(listOf(bodyFatRecord))
