@@ -5,12 +5,12 @@ plugins {
 
 android {
     namespace 'com.yunmai.healthsync'
-    compileSdk 34  // 使用稳定版本
+    compileSdk 36
 
     defaultConfig {
         applicationId "com.yunmai.healthsync"
         minSdk 26
-        targetSdk 34  // 使用稳定版本
+        targetSdk 36
         versionCode 13
         versionName "1.9.3"
     }
