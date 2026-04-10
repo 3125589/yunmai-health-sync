@@ -149,21 +149,19 @@ class MainActivity : AppCompatActivity() {
      */
     private fun openHealthConnectSettings() {
         try {
-            // 打开 Health Connect 应用权限页面
-            val intent = Intent(Intent.ACTION_VIEW_PERMISSION_USAGE)
-            intent.setPackage("com.google.android.apps.healthdata")
-            intent.addCategory(Intent.CATEGORY_HEALTH_PERMISSIONS)
-            startActivity(intent)
+            // 尝试直接打开 Health Connect 应用
+            val intent = packageManager.getLaunchIntentForPackage("com.google.android.apps.healthdata")
+            if (intent != null) {
+                startActivity(intent)
+            } else {
+                // 如果没有安装，打开 Google Play 下载页面
+                val playIntent = Intent(Intent.ACTION_VIEW)
+                playIntent.data = android.net.Uri.parse("market://details?id=com.google.android.apps.healthdata")
+                startActivity(playIntent)
+            }
         } catch (e: Exception) {
             Log.e(TAG, "无法打开 Health Connect 设置", e)
-            // 如果上面的 Intent 失败，尝试打开 Health Connect 主页面
-            try {
-                val fallbackIntent = Intent()
-                fallbackIntent.setPackage("com.google.android.apps.healthdata")
-                startActivity(fallbackIntent)
-            } catch (e2: Exception) {
-                Toast.makeText(this, "请手动打开 Health Connect 设置", Toast.LENGTH_LONG).show()
-            }
+            Toast.makeText(this, "请手动打开 Health Connect 应用", Toast.LENGTH_LONG).show()
         }
     }
 
