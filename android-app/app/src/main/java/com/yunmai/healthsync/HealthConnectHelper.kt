@@ -19,7 +19,7 @@ import java.time.format.DateTimeFormatter
  * Health Connect 操作管理类
  * 使用 Health Connect SDK 1.0.0 (兼容 compileSdk 34)
  */
-class HealthConnectHelper(context: Context) {
+class HealthConnectHelper(private val context: Context) {
 
     private val healthConnectClient: HealthConnectClient = 
         HealthConnectClient.getOrCreate(context)
