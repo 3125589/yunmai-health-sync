@@ -1,5 +1,6 @@
 package com.yunmai.healthsync
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -29,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnSyncNow: Button
     private lateinit var btnSetupSchedule: Button
     private lateinit var btnGrantPermission: Button
+    private lateinit var btnOpenHealthConnect: Button
     
     private var healthConnectClient: HealthConnectClient? = null
 
@@ -40,17 +42,22 @@ class MainActivity : AppCompatActivity() {
         HealthPermission.getWritePermission(BodyFatRecord::class)
     )
 
-    // 权限请求 (Android 16+ 使用 requestPermissionsActivityContract)
+    // 权限请求 (使用标准 API)
     private val requestPermissionLauncher = registerForActivityResult(
-        PermissionController.requestPermissionsActivityContract()
+        PermissionController.createRequestPermissionResultContract()
     ) { granted ->
         Log.d(TAG, "授权结果: $granted")
+        Log.d(TAG, "请求的权限: $permissions")
+        Log.d(TAG, "是否全部授权: ${granted.containsAll(permissions)}")
         if (granted.containsAll(permissions)) {
             tvStatus.text = "✅ 权限已授权"
             Toast.makeText(this, "权限授权成功！", Toast.LENGTH_SHORT).show()
         } else {
-            tvStatus.text = "⚠️ 部分权限未授权: ${permissions - granted}"
-            Log.w(TAG, "缺少权限: ${permissions - granted}")
+            val missing = permissions - granted
+            tvStatus.text = "⚠️ 缺少权限: ${missing.size}"
+            Log.w(TAG, "缺少权限: $missing")
+            // Android 16 可能需要用户手动到 Health Connect 设置中授权
+            Toast.makeText(this, "请到 Health Connect 设置中手动授权", Toast.LENGTH_LONG).show()
         }
     }
 
@@ -67,10 +74,12 @@ class MainActivity : AppCompatActivity() {
         btnSyncNow = findViewById(R.id.btnSyncNow)
         btnSetupSchedule = findViewById(R.id.btnSetupSchedule)
         btnGrantPermission = findViewById(R.id.btnGrantPermission)
+        btnOpenHealthConnect = findViewById(R.id.btnOpenHealthConnect)
 
         btnSyncNow.setOnClickListener { syncNow() }
         btnSetupSchedule.setOnClickListener { setupDailySchedule() }
         btnGrantPermission.setOnClickListener { requestPermissions() }
+        btnOpenHealthConnect.setOnClickListener { openHealthConnectSettings() }
     }
 
     override fun onResume() {
@@ -130,6 +139,30 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Log.e(TAG, "请求权限失败", e)
                 Toast.makeText(this@MainActivity, "请求权限失败: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    /**
+     * 打开 Health Connect 应用权限设置页面
+     * Android 16 上可能需要手动授权
+     */
+    private fun openHealthConnectSettings() {
+        try {
+            // 打开 Health Connect 应用权限页面
+            val intent = Intent(Intent.ACTION_VIEW_PERMISSION_USAGE)
+            intent.setPackage("com.google.android.apps.healthdata")
+            intent.addCategory(Intent.CATEGORY_HEALTH_PERMISSIONS)
+            startActivity(intent)
+        } catch (e: Exception) {
+            Log.e(TAG, "无法打开 Health Connect 设置", e)
+            // 如果上面的 Intent 失败，尝试打开 Health Connect 主页面
+            try {
+                val fallbackIntent = Intent()
+                fallbackIntent.setPackage("com.google.android.apps.healthdata")
+                startActivity(fallbackIntent)
+            } catch (e2: Exception) {
+                Toast.makeText(this, "请手动打开 Health Connect 设置", Toast.LENGTH_LONG).show()
             }
         }
     }

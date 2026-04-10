@@ -44,6 +44,16 @@
         android:text="🔐 授权 Health Connect"
         android:textSize="16sp"
         android:backgroundTint="#FF9800"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- 打开 Health Connect 设置按钮（Android 16 手动授权） -->
+    <Button
+        android:id="@+id/btnOpenHealthConnect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="打开 Health Connect 设置"
+        android:textSize="14sp"
+        android:backgroundTint="#9C27B0"
         android:layout_marginBottom="16dp"/>
 
     <!-- 立即同步按钮 -->
@@ -69,8 +79,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:text="⚠️ 重要提示：\n\n1. 首次使用请点击「授权 Health Connect」\n\n2. 在 Health Connect 中找到「云麦体重同步」并授权所有权限\n\n3. 授权后点击「立即同步」测试"
-        android:textSize="14sp"
+        android:text="⚠️ Android 16 授权说明：\n\n1. 点击「授权 Health Connect」弹出权限界面\n\n2. 如果授权后仍显示缺少权限，点击「打开 Health Connect 设置」\n\n3. 在 Health Connect → 应用权限中找到「云麦体重同步」\n\n4. 手动开启所有权限（体重、体脂）\n\n5. 返回 App 点击「立即同步」测试"
+        android:textSize="12sp"
         android:textColor="#FF5722"/>
 
 </LinearLayout>
