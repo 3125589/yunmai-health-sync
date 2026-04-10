@@ -19,11 +19,17 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
     
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
+    
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
-      with:
-        cmdline-tools-version: 11076708
-        log-gradle-key: true
+    
+    - name: Accept Android SDK licenses
+      run: yes | sdkmanager --licenses || true
+    
+    - name: Install Android SDK Platform 34
+      run: sdkmanager "platforms;android-34" "build-tools;34.0.0" || true
     
     - name: Make gradlew executable
       run: chmod +x android-app/gradlew
@@ -31,8 +37,7 @@ jobs:
     - name: Build APK with Gradle Wrapper
       run: |
         cd android-app
-        ./gradlew assembleDebug --no-daemon 2>&1 || true
-        ./gradlew assembleDebug --stacktrace --no-daemon 2>&1 | tail -100
+        ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tail -50
     
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
@@ -44,19 +49,24 @@ jobs:
       if: success()
       uses: softprops/action-gh-release@v1
       with:
-        tag_name: v1.2.0
-        name: Yunmai Health Sync v1.2.0
+        tag_name: v1.9.1
+        name: Yunmai Health Sync v1.9.1 (SDK 1.0.0)
         files: android-app/app/build/outputs/apk/debug/*.apk
         body: |
           云麦体重同步 Android App
           
-          功能：
-          - 自动从 API 获取云麦体重数据
-          - 写入 Health Connect
-          - 支持手动同步和定时同步
+          ## 版本说明
+          - 使用 Health Connect SDK 1.0.0
+          - targetSdk 34 (Android 14)
+          - 新增「打开 Health Connect 设置」按钮
+          - 支持 Android 16 手动授权
           
-          重要：
-          - 使用 Health Connect SDK 1.1.0-rc02
-          - 正确请求 Health Connect 权限
+          ## 使用说明
+          1. 安装 APK
+          2. 点击「授权 Health Connect」
+          3. 如果授权失败，点击「打开 Health Connect 设置」
+          4. 在 Health Connect → 应用权限 中找到「云麦体重同步」
+          5. 手动开启所有权限
+          6. 返回 App 点击「立即同步」测试
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
