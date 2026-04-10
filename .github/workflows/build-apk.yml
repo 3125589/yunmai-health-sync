@@ -42,25 +42,27 @@ jobs:
         cd android-app
         ./gradlew assembleDebug --no-daemon --stacktrace 2>&1 | tail -50
     
-    - name: List APK files
+    - name: List and copy APK files
       run: |
         echo "Finding APK files..."
-        find android-app -name '*.apk' -type f
-        ls -la android-app/app/build/outputs/apk/debug/ || true
+        find android-app -name '*.apk' -type f -exec ls -la {} \;
+        # Copy APK to a known location
+        mkdir -p /tmp/apk
+        find android-app -name '*.apk' -type f -exec cp {} /tmp/apk/ \;
+        ls -la /tmp/apk/
     
     - name: Upload APK Artifact
       uses: actions/upload-artifact@v4
       with:
         name: yunmai-health-sync-apk
-        path: android-app/app/build/outputs/apk/debug/*.apk
-        if-no-files-found: error
+        path: /tmp/apk/*.apk
     
     - name: Create Release with APK
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ github.run_number }}
         name: Yunmai Health Sync v1.9.2 (Build ${{ github.run_number }})
-        files: android-app/app/build/outputs/apk/debug/*.apk
+        files: /tmp/apk/*.apk
         body: |
           云麦体重同步 Android App v1.9.2
           
