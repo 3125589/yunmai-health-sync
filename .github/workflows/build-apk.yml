@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -46,7 +49,7 @@ jobs:
         path: android-app/app/build/outputs/apk/debug/*.apk
     
     - name: Create Release with APK
-      if: success()
+      continue-on-error: true
       uses: softprops/action-gh-release@v1
       with:
         tag_name: v${{ github.run_number }}
@@ -55,18 +58,7 @@ jobs:
         body: |
           云麦体重同步 Android App
           
-          ## 版本说明
-          - 使用 Health Connect SDK 1.0.0
-          - targetSdk 34 (Android 14)
-          - 新增「打开 Health Connect 设置」按钮
-          - 支持 Android 16 手动授权
-          
-          ## 使用说明
-          1. 安装 APK
-          2. 点击「授权 Health Connect」
-          3. 如果授权失败，点击「打开 Health Connect 设置」
-          4. 在 Health Connect → 应用权限 中找到「云麦体重同步」
-          5. 手动开启所有权限
-          6. 返回 App 点击「立即同步」测试
+          使用 Health Connect SDK 1.0.0
+          支持 Android 16 手动授权
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
